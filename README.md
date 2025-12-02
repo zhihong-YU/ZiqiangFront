@@ -3,7 +3,7 @@
 1. **进入前端目录**
 
 ```
-cd lab-platform-frontend
+cd ZiqiangFrontend
 ```
 
 2. **安装依赖**
