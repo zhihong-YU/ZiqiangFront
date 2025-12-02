@@ -1,0 +1,23 @@
+.login-container {
+  padding: 20px;
+  border: 1px solid #ccc;
+  width: 300px;
+  margin: 50px auto;
+}
+
+.form-group {
+  margin-bottom: 10px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 8px;
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.login-btn:disabled {
+  background-color: #ccc;
+}

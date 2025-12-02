@@ -1,13 +1,15 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. 引入跳转钩子
 import './Login.css'
 
 function Login() {
+  const navigate = useNavigate(); // 2. 获取跳转函数
   // 1. 定义状态 (State)
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // 2. 处理登录逻辑的函数
+  // 2. 处理登录逻辑的函npm install typescript @types/react @types/react-dom @types/node -D数
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -28,7 +30,9 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        alert('登录成功！后端返回: ' + JSON.stringify(data));
+        // alert('登录成功！后端返回: ' + JSON.stringify(data));
+        // 3. 登录成功后，跳转到仪表盘
+        navigate('/dashboard');
       } else {
         alert('登录失败: ' + (data.detail || '账号或密码错误'));
       }
@@ -41,11 +45,11 @@ function Login() {
   };
 
   return (
-    <div style={{ padding: '20px', border: '1px solid #ccc', width: '300px', margin: '50px auto' }}>
+    <div className="login-container">
       <h2>用户登录</h2>
       <form onSubmit={handleLogin}>
         {/* 学号输入框 */}
-        <div style={{ marginBottom: '10px' }}>
+        <div className="form-group">
           <label>学号: </label>
           <input 
             type="text" 
@@ -56,7 +60,7 @@ function Login() {
         </div>
 
         {/* 密码输入框 */}
-        <div style={{ marginBottom: '10px' }}>
+        <div className="form-group">
           <label>密码: </label>
           <input 
             type="password" 
@@ -67,7 +71,7 @@ function Login() {
         </div>
 
         {/* 登录按钮 */}
-        <button type="submit" disabled={isLoading}>
+        <button type="submit" className="login-btn" disabled={isLoading}>
           {isLoading ? '登录中...' : '登录'}
         </button>
       </form>
