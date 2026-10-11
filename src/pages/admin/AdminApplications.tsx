@@ -60,13 +60,13 @@ const AdminApplications: React.FC = () => {
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject'>('approve')
   const [reviewNote, setReviewNote] = useState('')
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (requestPage = page) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (statusFilter) params.set('status', statusFilter)
       if (eventFilter) params.set('event', eventFilter)
-      params.set('page', String(page))
+      params.set('page', String(requestPage))
       params.set('page_size', '20')
       const res = await fetch(`/api/admin/applications/?${params.toString()}`)
       if (!res.ok) {
@@ -91,7 +91,7 @@ const AdminApplications: React.FC = () => {
 
   const handleSearch = () => {
     setPage(1)
-    fetchApplications()
+    fetchApplications(1)
   }
 
   const openDetail = (app: ApplicationItem) => {
@@ -216,6 +216,7 @@ const AdminApplications: React.FC = () => {
           pagination={{
             current: page,
             pageSize: 20,
+            showSizeChanger: false,
             total,
             onChange: (p) => setPage(p),
             showTotal: (t: number) => `共 ${t} 条`,

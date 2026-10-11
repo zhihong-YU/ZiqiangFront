@@ -56,13 +56,13 @@ const AdminUsers: React.FC = () => {
   const [editingUser, setEditingUser] = useState<UserItem | null>(null)
   const [form] = AppForm.useForm<UserItem>()
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (requestPage = page) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (roleFilter) params.set('role', roleFilter)
       if (searchText) params.set('search', searchText)
-      params.set('page', String(page))
+      params.set('page', String(requestPage))
       params.set('page_size', '20')
       const res = await fetch(`/api/admin/users/?${params.toString()}`)
       if (!res.ok) throw new Error()
@@ -83,12 +83,12 @@ const AdminUsers: React.FC = () => {
 
   const handleSearch = () => {
     setPage(1)
-    fetchUsers()
+    fetchUsers(1)
   }
 
   const handleDelete = async (id: number) => {
     try {
-      const res = await fetch(`/api/admin/users/${id}/`, { method: 'DELETE' })
+      const res = await fetch(`/api/admin/users/${id}/delete/`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       message.success('删除成功')
       fetchUsers()
@@ -105,6 +105,7 @@ const AdminUsers: React.FC = () => {
 
   const openEdit = (user: UserItem) => {
     setEditingUser(user)
+    form.resetFields()
     form.setFieldsValue(user)
     setModalVisible(true)
   }
@@ -112,8 +113,8 @@ const AdminUsers: React.FC = () => {
   const handleSubmit = async (values: UserItem) => {
     try {
       const url = editingUser
-        ? `/api/admin/users/${editingUser.id}/`
-        : '/api/admin/users/'
+        ? `/api/admin/users/${editingUser.id}/update/`
+        : '/api/admin/users/create/'
       const method = editingUser ? 'PUT' : 'POST'
       const res = await fetch(url, {
         method,
@@ -221,6 +222,7 @@ const AdminUsers: React.FC = () => {
           pagination={{
             current: page,
             pageSize: 20,
+            showSizeChanger: false,
             total,
             onChange: (p) => setPage(p),
             showTotal: (t: number) => `共 ${t} 条`,
@@ -250,7 +252,7 @@ const AdminUsers: React.FC = () => {
           <AppForm.Item name="email" label="邮箱" rules={[{ required: true, type: 'email', message: '请输入有效邮箱' }]}>
             <AntInput />
           </AppForm.Item>
-          <AppForm.Item name="password" label={editingUser ? '新密码（留空不修改）' : '密码'} rules={editingUser ? [] : [{ required: true, message: '请输入密码' }]}>
+          <AppForm.Item name="password" label={editingUser ? '新密码（留空不修改）' : '密码'} rules={[{ required: !editingUser, message: '请输入密码' }, { min: 6, message: '密码至少需要6个字符' }]}>
             <AntInput.Password />
           </AppForm.Item>
           <AppForm.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>

@@ -1,9 +1,9 @@
 import { Layout, Menu, theme, Avatar, Dropdown, MenuProps } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  UserOutlined, 
-  BookOutlined, 
+import {
+  UserOutlined,
+  BookOutlined,
   LogoutOutlined,
   AppstoreAddOutlined,
   SearchOutlined,
@@ -66,7 +66,7 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
       label: '个人中心',
       onClick: () => navigate('/profile'),
     },
-    ...(role === 'teacher' ? [{
+    ...(role === 'teacher' || role === 'admin' ? [{
         key: '/projects/manage',
         icon: <AppstoreAddOutlined />,
         label: '项目管理',
@@ -91,17 +91,18 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
       label: '知识库',
       onClick: () => navigate('/knowledge'),
     },
+    ...(role === 'admin' ? [{ key: '/admin', icon: <UserOutlined />, label: '管理员后台', onClick: () => navigate('/admin') }] : []),
   ];
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-      <Header 
-        style={{ 
-          position: 'sticky', 
-          top: 0, 
-          zIndex: 1, 
-          width: '100%', 
-          display: 'flex', 
+      <Header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+          width: '100%',
+          display: 'flex',
           alignItems: 'center',
           background: 'rgba(255, 255, 255, 0.8)',
           backdropFilter: 'blur(10px)',
@@ -110,12 +111,12 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
           boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
         }}
       >
-        <div 
-          className="logo" 
-          style={{ 
-            marginRight: 40, 
-            fontSize: '18px', 
-            fontWeight: 600, 
+        <div
+          className="logo"
+          style={{
+            marginRight: 40,
+            fontSize: '18px',
+            fontWeight: 600,
             color: '#333',
             cursor: 'pointer',
             display: 'flex',
@@ -127,15 +128,15 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
           <img src="/Ziqianglogo.jpg" alt="Logo" style={{ width: 24, height: 24, borderRadius: '4px', objectFit: 'cover' }} />
           自强科协
         </div>
-        
+
         <Menu
           mode="horizontal"
           selectedKeys={[location.pathname]}
           items={menuItems}
-          style={{ 
-            flex: 1, 
-            minWidth: 0, 
-            borderBottom: 'none', 
+          style={{
+            flex: 1,
+            minWidth: 0,
+            borderBottom: 'none',
             background: 'transparent',
             lineHeight: '64px'
           }}
@@ -150,16 +151,16 @@ export const MainLayout: React.FC<{ children?: React.ReactNode }> = ({ children 
           </Dropdown>
         </div>
       </Header>
-      
+
       <Content style={{ padding: '24px 48px', maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-        <div style={{ 
-          minHeight: 280, 
+        <div style={{
+          minHeight: 280,
           background: 'transparent',
         }}>
           {children ? children : <Outlet />}
         </div>
       </Content>
-      
+
       <Footer style={{ textAlign: 'center', color: '#999', background: 'transparent' }}>
         自强科协平台 ©{new Date().getFullYear()} Created by Ziqiang Studio
       </Footer>

@@ -13,16 +13,12 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            // Remove origin and referer to bypass Django's strict origin checking
-            // when it doesn't match CSRF_TRUSTED_ORIGINS
-            proxyReq.removeHeader('origin');
-            proxyReq.removeHeader('referer');
-          });
-        },
+      },
+      '/media/avatars/': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
       },
     },
   },

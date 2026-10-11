@@ -43,7 +43,7 @@ function Register() {
         message.error('请先输入邮箱');
         return;
       }
-      
+
       // 简单的邮箱格式验证
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
@@ -68,7 +68,7 @@ function Register() {
         const errorMsg = typeof data.email === 'object' ? data.email[0] : (data.detail || '发送失败');
         message.error(errorMsg);
       }
-    } catch (error) {
+    } catch {
       message.error('网络错误，无法发送验证码');
     } finally {
       setLoadingCode(false);
@@ -138,7 +138,7 @@ function Register() {
               size="large"
             />
           </div>
-          
+
           <AppForm<RegisterValues>
               form={form}
               onFinishAsync={handleRegister}
@@ -152,9 +152,9 @@ function Register() {
                       name="student_id"
                       rules={[{ required: true, message: role === 'student' ? '请输入学号' : '请输入工号' }]}
                   >
-                      <Input 
-                          prefix={<UserOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                          placeholder={role === 'student' ? "学号" : "工号"} 
+                      <Input
+                          prefix={<UserOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                          placeholder={role === 'student' ? "学号" : "工号"}
                       />
                   </AppForm.Item>
                 </Col>
@@ -163,9 +163,9 @@ function Register() {
                       name="name"
                       rules={[{ required: true, message: '请输入姓名' }]}
                   >
-                      <Input 
-                          prefix={<SolutionOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                          placeholder="姓名" 
+                      <Input
+                          prefix={<SolutionOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                          placeholder="姓名"
                       />
                   </AppForm.Item>
                 </Col>
@@ -178,9 +178,9 @@ function Register() {
                     { type: 'email', message: '请输入有效的邮箱地址' }
                   ]}
               >
-                  <Input 
-                      prefix={<MailOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                      placeholder="邮箱" 
+                  <Input
+                      prefix={<MailOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                      placeholder="邮箱"
                   />
               </AppForm.Item>
 
@@ -190,15 +190,15 @@ function Register() {
                       name="code"
                       rules={[{ required: true, message: '请输入验证码' }]}
                   >
-                      <Input 
-                          prefix={<SafetyCertificateOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                          placeholder="验证码" 
+                      <Input
+                          prefix={<SafetyCertificateOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                          placeholder="验证码"
                       />
                   </AppForm.Item>
                 </Col>
                 <Col>
-                  <Button 
-                    onClick={sendVerificationCode} 
+                  <Button
+                    onClick={sendVerificationCode}
                     disabled={countdown > 0 || loadingCode}
                     loading={loadingCode}
                     style={{ width: 120 }}
@@ -217,9 +217,9 @@ function Register() {
                         { min: 6, message: '密码至少6位' }
                       ]}
                   >
-                      <Input.Password 
-                          prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                          placeholder="密码" 
+                      <Input.Password
+                          prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                          placeholder="密码"
                       />
                   </AppForm.Item>
                 </Col>
@@ -239,9 +239,9 @@ function Register() {
                         }),
                       ]}
                   >
-                      <Input.Password 
-                          prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                          placeholder="确认密码" 
+                      <Input.Password
+                          prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                          placeholder="确认密码"
                       />
                   </AppForm.Item>
                 </Col>
@@ -250,9 +250,9 @@ function Register() {
               <AppForm.Item
                   name="phone"
               >
-                  <Input 
-                      prefix={<PhoneOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                      placeholder="手机号 (选填)" 
+                  <Input
+                      prefix={<PhoneOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                      placeholder="手机号 (选填)"
                   />
               </AppForm.Item>
 
@@ -268,7 +268,7 @@ function Register() {
               </div>
           </AppForm>
         </Card>
-        
+
         <div className="login-footer">
            <Text type="secondary" style={{ fontSize: 12 }}>© {new Date().getFullYear()} Ziqiang Studio. All rights reserved.</Text>
         </div>

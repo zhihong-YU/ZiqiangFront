@@ -71,15 +71,15 @@ const AdminEvents: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null)
   const [detailVisible, setDetailVisible] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<EventItem | null>(null)
-  const [form] = AppForm.useForm<EventItem>()
+  const [form] = AppForm.useForm<EventItem & { teacher_id?: number; attachment_id?: string }>()
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (requestPage = page) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (statusFilter) params.set('status', statusFilter)
       if (searchText) params.set('search', searchText)
-      params.set('page', String(page))
+      params.set('page', String(requestPage))
       params.set('page_size', '20')
       const res = await fetch(`/api/admin/events/?${params.toString()}`)
       if (!res.ok) throw new Error()
@@ -100,7 +100,7 @@ const AdminEvents: React.FC = () => {
 
   const handleSearch = () => {
     setPage(1)
-    fetchEvents()
+    fetchEvents(1)
   }
 
   const handleDelete = async (id: number) => {
@@ -141,7 +141,8 @@ const AdminEvents: React.FC = () => {
 
   const openEdit = (event: EventItem) => {
     setEditingEvent(event)
-    form.setFieldsValue(event)
+    form.resetFields()
+    form.setFieldsValue({ ...event, teacher_id: event.teacher, attachment_id: event.attachment?.id })
     setModalVisible(true)
   }
 
@@ -150,16 +151,16 @@ const AdminEvents: React.FC = () => {
     setDetailVisible(true)
   }
 
-  const handleSubmit = async (values: Record<string, unknown>) => {
+  const handleSubmit = async (values: EventItem & { teacher_id?: number; attachment_id?: string }) => {
     try {
       const url = editingEvent
-        ? `/api/admin/events/${editingEvent.id}/`
-        : '/api/admin/events/'
+        ? `/api/admin/events/${editingEvent.id}/update/`
+        : '/api/admin/events/create/'
       const method = editingEvent ? 'PUT' : 'POST'
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        body: JSON.stringify({ ...values, end_time: values.end_time || null, attachment_id: values.attachment_id || null }),
       })
       if (!res.ok) {
         const err = await res.json()
@@ -203,7 +204,7 @@ const AdminEvents: React.FC = () => {
           <Button type="link" icon={<EyeOutlined />} onClick={() => openDetail(record)}>
             详情
           </Button>
-          <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(record)}>
+          <Button type="link" icon={<EditOutlined />} disabled={record.status === 'closed'} onClick={() => openEdit(record)}>
             编辑
           </Button>
           {record.can_publish && (
@@ -264,6 +265,7 @@ const AdminEvents: React.FC = () => {
           pagination={{
             current: page,
             pageSize: 20,
+            showSizeChanger: false,
             total,
             onChange: (p) => setPage(p),
             showTotal: (t: number) => `共 ${t} 条`,

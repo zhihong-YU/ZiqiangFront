@@ -1,3 +1,4 @@
+import { fetchAllPages } from '@/utils/apiFetch'
 import React, { useEffect, useState } from 'react'
 import { MainLayout } from '@/layouts/MainLayout'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -31,13 +32,6 @@ interface ApplicationItem {
   updated_at: string
 }
 
-const normalizeList = <T,>(payload: unknown): T[] => {
-  if (Array.isArray(payload)) return payload as T[]
-  if (payload && typeof payload === 'object' && 'results' in payload && Array.isArray((payload as any).results)) {
-    return (payload as any).results as T[]
-  }
-  return []
-}
 
 const statusText: Record<ApplicationStatus, string> = {
   pending: '待审核',
@@ -62,10 +56,7 @@ const MyApplications: React.FC = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/event/my-applications/')
-      const data = await res.json()
-      if (!res.ok) throw new Error()
-      setApplications(normalizeList<ApplicationItem>(data))
+      setApplications(await fetchAllPages<ApplicationItem>('/api/event/my-applications/'))
     } catch {
       message.error('获取申请列表失败')
     } finally {

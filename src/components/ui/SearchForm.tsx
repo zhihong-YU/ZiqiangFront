@@ -6,7 +6,7 @@ interface SearchFormProps<T> extends AppFormProps<T> {
   onReset?: () => void;
 }
 
-export const SearchForm = <T extends object = any>({
+export const SearchForm = <T extends object = Record<string, unknown>>({
   children,
   onReset,
   ...props

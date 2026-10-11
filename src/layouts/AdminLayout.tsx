@@ -50,6 +50,7 @@ export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children
   }
 
   const menuItems = [
+    { key: '/admin/templates', icon: <FileOutlined />, label: '资料管理', onClick: () => navigate('/admin/templates') },
     {
       key: '/admin',
       icon: <DashboardOutlined />,

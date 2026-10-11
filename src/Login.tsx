@@ -22,10 +22,11 @@ function Login() {
       const response = await fetch('/api/user/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          student_id: values.student_id, 
+        body: JSON.stringify({
+          student_id: values.student_id,
           password: values.password,
-          remember_me: false 
+          remember_me: false,
+          role
         }),
       });
 
@@ -69,7 +70,7 @@ function Login() {
               size="large"
             />
           </div>
-          
+
           <AppForm<LoginValues>
               onFinishAsync={handleLogin}
               successMessage="登录成功"
@@ -79,9 +80,9 @@ function Login() {
                   name="student_id"
                   rules={[{ required: true, message: role === 'student' ? '请输入学号' : '请输入工号' }]}
               >
-                  <Input 
-                      prefix={<UserOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                      placeholder={role === 'student' ? "学号 (例如: 2023001)" : "工号"} 
+                  <Input
+                      prefix={<UserOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                      placeholder={role === 'student' ? "学号 (例如: 2023001)" : "工号"}
                   />
               </AppForm.Item>
 
@@ -89,9 +90,9 @@ function Login() {
                   name="password"
                   rules={[{ required: true, message: '请输入密码' }]}
               >
-                  <Input.Password 
-                      prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />} 
-                      placeholder="密码" 
+                  <Input.Password
+                      prefix={<LockOutlined style={{ color: 'rgba(0,0,0,0.25)' }} />}
+                      placeholder="密码"
                   />
               </AppForm.Item>
 
@@ -105,12 +106,9 @@ function Login() {
                 <Text type="secondary">还没有账号？ </Text>
                 <Link to="/register">立即注册</Link>
               </div>
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <Link to="/admin/login" style={{ fontSize: 12, color: '#bbb' }}>管理员入口</Link>
-              </div>
           </AppForm>
         </Card>
-        
+
         <div className="login-footer">
            <Text type="secondary" style={{ fontSize: 12 }}>© {new Date().getFullYear()} Ziqiang Studio. All rights reserved.</Text>
         </div>

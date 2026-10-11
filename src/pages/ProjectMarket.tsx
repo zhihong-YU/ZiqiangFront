@@ -1,3 +1,4 @@
+import { fetchAllPages } from '@/utils/apiFetch'
 import React, { useEffect, useState } from 'react'
 import { MainLayout } from '@/layouts/MainLayout'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -29,11 +30,6 @@ interface EventItem {
   attachment?: FileInfo | null
 }
 
-const normalizeList = <T,>(payload: any): T[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.results)) return payload.results
-  return []
-}
 
 const statusText: Record<EventStatus, string> = {
   draft: '草稿',
@@ -49,14 +45,17 @@ const statusColor: Record<EventStatus, string> = {
   closed: 'default',
 }
 
-const ResumeUploader = ({ value, onChange }: { value?: string; onChange?: (value: string) => void }) => (
+const ResumeUploader = ({ value, onChange, uploading, onUploadingChange }: {
+  value?: string; onChange?: (value: string) => void;
+  uploading: boolean; onUploadingChange: (uploading: boolean) => void;
+}) => (
   <Upload
     showUploadList={false}
     beforeUpload={(file) => {
       const allowedExtensions = ['.pdf', '.doc', '.docx', '.zip']
       const fileName = file.name.toLowerCase()
       const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
-      
+
       if (!isValidType) {
         message.error('只允许上传 .pdf, .doc, .docx, .zip 格式的文件')
         return Upload.LIST_IGNORE
@@ -69,6 +68,7 @@ const ResumeUploader = ({ value, onChange }: { value?: string; onChange?: (value
       return true
     }}
     customRequest={async ({ file, onSuccess, onError }) => {
+      onUploadingChange(true)
       try {
         const formData = new FormData()
         formData.append('file', file as File)
@@ -85,10 +85,12 @@ const ResumeUploader = ({ value, onChange }: { value?: string; onChange?: (value
       } catch (e) {
         onError?.(e as Error)
         message.error('简历上传失败')
+      } finally {
+        onUploadingChange(false)
       }
     }}
   >
-    <Button icon={<UploadOutlined />}>{value ? '重新上传简历' : '上传简历(可选)'}</Button>
+    <Button loading={uploading} icon={<UploadOutlined />}>{value ? '重新上传简历' : '上传简历(可选)'}</Button>
   </Upload>
 )
 
@@ -97,6 +99,7 @@ const ProjectMarket: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [detailVisible, setDetailVisible] = useState(false)
   const [applyVisible, setApplyVisible] = useState(false)
+  const [resumeUploading, setResumeUploading] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<EventItem | null>(null)
   const [teacherKeyword, setTeacherKeyword] = useState('')
   const [status, setStatus] = useState<EventStatus | undefined>()
@@ -108,10 +111,7 @@ const ProjectMarket: React.FC = () => {
       const params = new URLSearchParams()
       if (teacherKeyword) params.set('teacher_name', teacherKeyword)
       if (status) params.set('status', status)
-      const res = await fetch(`/api/event/events/?${params.toString()}`)
-      const data = await res.json()
-      if (!res.ok) throw new Error()
-      setEvents(normalizeList<EventItem>(data).filter((item) => item.status !== 'draft'))
+      setEvents(await fetchAllPages<EventItem>(`/api/event/events/?${params.toString()}`))
     } catch {
       message.error('获取项目列表失败')
     } finally {
@@ -133,10 +133,12 @@ const ProjectMarket: React.FC = () => {
 
   useEffect(() => {
     fetchPublicEvents()
+    // Initial load; filters are applied with the query button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleApply = async (values: any) => {
-    if (!currentEvent) return
+  const handleApply = async (values: { statement?: string; resume_id?: string }) => {
+    if (!currentEvent || resumeUploading) return
     try {
       const payload = {
         statement: values.statement,
@@ -284,18 +286,18 @@ const ProjectMarket: React.FC = () => {
         ) : null}
       </Modal>
 
-      <Modal title={`申请项目 - ${currentEvent?.title || ''}`} open={applyVisible} onCancel={() => setApplyVisible(false)} footer={null}>
+      <Modal title={`申请项目 - ${currentEvent?.title || ''}`} open={applyVisible} closable={!resumeUploading} maskClosable={!resumeUploading} keyboard={!resumeUploading} onCancel={() => setApplyVisible(false)} footer={null}>
         <AppForm form={form} onFinishAsync={handleApply} layout="vertical">
           <AppForm.Item name="statement" label="申请陈述" rules={[{ required: true, message: '请填写申请陈述' }]}>
             <Input.TextArea rows={4} maxLength={500} showCount />
           </AppForm.Item>
           <AppForm.Item name="resume_id" label="简历(可选)">
-            <ResumeUploader />
+            <ResumeUploader uploading={resumeUploading} onUploadingChange={setResumeUploading} />
           </AppForm.Item>
           <AppForm.Item>
             <Space style={{ float: 'right' }}>
-              <Button onClick={() => setApplyVisible(false)}>取消</Button>
-              <Button type="primary" htmlType="submit">提交申请</Button>
+              <Button disabled={resumeUploading} onClick={() => setApplyVisible(false)}>取消</Button>
+              <Button type="primary" htmlType="submit" disabled={resumeUploading}>提交申请</Button>
             </Space>
           </AppForm.Item>
         </AppForm>

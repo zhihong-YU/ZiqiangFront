@@ -1,3 +1,4 @@
+import { fetchAllPages } from '@/utils/apiFetch'
 import React, { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 import { MainLayout } from '@/layouts/MainLayout'
@@ -45,13 +46,10 @@ interface ApplicationItem {
   statement: string
   status: AppStatus
   created_at: string
+  resume?: FileInfo | null
+  review_note?: string
 }
 
-const normalizeList = <T,>(payload: any): T[] => {
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.results)) return payload.results
-  return []
-}
 
 const statusColor: Record<EventStatus, string> = {
   draft: 'orange',
@@ -67,7 +65,10 @@ const statusText: Record<EventStatus, string> = {
   closed: '已关闭',
 }
 
-const UploadField = ({ value, onChange }: { value?: string; onChange?: (value: string) => void }) => {
+const UploadField = ({ value, onChange, onUploadingChange }: {
+  value?: string; onChange?: (value: string) => void;
+  onUploadingChange: (uploading: boolean) => void;
+}) => {
   const [uploading, setUploading] = useState(false)
 
   return (
@@ -78,7 +79,7 @@ const UploadField = ({ value, onChange }: { value?: string; onChange?: (value: s
           const allowedExtensions = ['.pdf', '.doc', '.docx', '.zip']
           const fileName = file.name.toLowerCase()
           const isValidType = allowedExtensions.some(ext => fileName.endsWith(ext))
-          
+
           if (!isValidType) {
             message.error('只允许上传 .pdf, .doc, .docx, .zip 格式的文件')
             return Upload.LIST_IGNORE
@@ -93,6 +94,7 @@ const UploadField = ({ value, onChange }: { value?: string; onChange?: (value: s
         customRequest={async ({ file, onSuccess, onError }) => {
           try {
             setUploading(true)
+            onUploadingChange(true)
             const formData = new FormData()
             formData.append('file', file as File)
             formData.append('category', 'event_attachment')
@@ -112,6 +114,7 @@ const UploadField = ({ value, onChange }: { value?: string; onChange?: (value: s
             message.error('附件上传失败')
           } finally {
             setUploading(false)
+            onUploadingChange(false)
           }
         }}
       >
@@ -126,6 +129,7 @@ const ProjectManagement: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([])
   const [loading, setLoading] = useState(false)
   const [editVisible, setEditVisible] = useState(false)
+  const [attachmentUploading, setAttachmentUploading] = useState(false)
   const [appsVisible, setAppsVisible] = useState(false)
   const [currentEvent, setCurrentEvent] = useState<EventItem | null>(null)
   const [applications, setApplications] = useState<ApplicationItem[]>([])
@@ -134,10 +138,7 @@ const ProjectManagement: React.FC = () => {
   const fetchTeacherEvents = async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/event/teacher/events/')
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.detail || '获取失败')
-      setEvents(normalizeList<EventItem>(data))
+      setEvents(await fetchAllPages<EventItem>('/api/event/teacher/events/'))
     } catch {
       message.error('获取项目列表失败')
     } finally {
@@ -147,10 +148,7 @@ const ProjectManagement: React.FC = () => {
 
   const fetchApplications = async (eventId: number) => {
     try {
-      const res = await fetch(`/api/event/teacher/applications/?event=${eventId}`)
-      const data = await res.json()
-      if (!res.ok) throw new Error()
-      setApplications(normalizeList<ApplicationItem>(data))
+      setApplications(await fetchAllPages<ApplicationItem>(`/api/event/teacher/applications/?event=${eventId}`))
     } catch {
       message.error('获取申请列表失败')
     }
@@ -160,7 +158,8 @@ const ProjectManagement: React.FC = () => {
     fetchTeacherEvents()
   }, [])
 
-  const handleCreateOrUpdate = async (values: any) => {
+  const handleCreateOrUpdate = async (values: { title: string; date_range: [dayjs.Dayjs, dayjs.Dayjs]; location?: string; description: string; expected_participants: number; attachment_id?: string }) => {
+    if (attachmentUploading) return
     try {
       const payload = {
         title: values.title,
@@ -230,6 +229,7 @@ const ProjectManagement: React.FC = () => {
       if (!res.ok) throw new Error()
       message.success('已通过')
       if (currentEvent) fetchApplications(currentEvent.id)
+      fetchTeacherEvents()
     } catch {
       message.error('操作失败')
     }
@@ -241,6 +241,7 @@ const ProjectManagement: React.FC = () => {
       if (!res.ok) throw new Error()
       message.success('已拒绝')
       if (currentEvent) fetchApplications(currentEvent.id)
+      fetchTeacherEvents()
     } catch {
       message.error('操作失败')
     }
@@ -284,6 +285,7 @@ const ProjectManagement: React.FC = () => {
           <Button
             type="link"
             icon={<EditOutlined />}
+            disabled={record.status === 'closed'}
             onClick={() => {
               setCurrentEvent(record)
               form.setFieldsValue({
@@ -314,21 +316,23 @@ const ProjectManagement: React.FC = () => {
   const appColumns = [
     { title: '学生', dataIndex: 'student_name', key: 'student_name' },
     { title: '学号', dataIndex: 'student_id', key: 'student_id' },
-    { title: '申请说明', dataIndex: 'statement', key: 'statement', ellipsis: true },
+    { title: '申请说明', dataIndex: 'statement', key: 'statement' },
+    { title: '简历', key: 'resume', render: (_: unknown, record: ApplicationItem) => record.resume ? <a href={record.resume.file_url} target="_blank" rel="noreferrer">{record.resume.original_name}</a> : '无' },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: AppStatus) => <Tag>{status}</Tag>,
+      render: (status: AppStatus) => <Tag>{({ pending: '待审核', approved: '已通过', rejected: '已拒绝', cancelled: '已撤回' })[status]}</Tag>,
     },
     {
       title: '操作',
       key: 'action',
       render: (_: unknown, record: ApplicationItem) =>
-        record.status === 'pending' ? (
+        (currentEvent?.status === 'published' && record.status !== 'cancelled') ||
+        (currentEvent?.status === 'ongoing' && record.status === 'pending') ? (
           <Space>
-            <Button size="small" type="primary" onClick={() => handleApprove(record.id)}>通过</Button>
-            <Button size="small" danger onClick={() => handleReject(record.id)}>拒绝</Button>
+            <Button size="small" type="primary" disabled={record.status === 'approved'} onClick={() => handleApprove(record.id)}>通过</Button>
+            <Button size="small" danger disabled={record.status === 'rejected'} onClick={() => handleReject(record.id)}>拒绝</Button>
           </Space>
         ) : null,
     },
@@ -371,7 +375,7 @@ const ProjectManagement: React.FC = () => {
         />
       </ContentCard>
 
-      <Modal open={editVisible} onCancel={() => setEditVisible(false)} footer={null} title={currentEvent ? '编辑项目' : '创建项目'} width={760}>
+      <Modal open={editVisible} closable={!attachmentUploading} maskClosable={!attachmentUploading} keyboard={!attachmentUploading} onCancel={() => setEditVisible(false)} footer={null} title={currentEvent ? '编辑项目' : '创建项目'} width={760}>
         <AppForm form={form} onFinishAsync={handleCreateOrUpdate} layout="vertical">
           <AppForm.Item name="title" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
             <Input />
@@ -389,12 +393,12 @@ const ProjectManagement: React.FC = () => {
             <Input.TextArea rows={4} />
           </AppForm.Item>
           <AppForm.Item name="attachment_id" label="补充文件(≤20MB)">
-            <UploadField />
+            <UploadField onUploadingChange={setAttachmentUploading} />
           </AppForm.Item>
           <AppForm.Item>
             <Space>
-              <Button type="primary" htmlType="submit">保存</Button>
-              <Button onClick={() => setEditVisible(false)}>取消</Button>
+              <Button type="primary" htmlType="submit" disabled={attachmentUploading}>保存</Button>
+              <Button disabled={attachmentUploading} onClick={() => setEditVisible(false)}>取消</Button>
             </Space>
           </AppForm.Item>
         </AppForm>

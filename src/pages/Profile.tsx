@@ -25,11 +25,11 @@ const Profile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [emailModalVisible, setEmailModalVisible] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
-  
+
   // Email Change State
   const [emailCountdown, setEmailCountdown] = useState(0);
   const [emailForm] = AppForm.useForm();
-  
+
   // Password Change State
   const [passwordForm] = AppForm.useForm();
 
@@ -66,13 +66,12 @@ const Profile: React.FC = () => {
   }, [emailCountdown]);
 
   const handleUpdateProfile = async (values: Partial<UserProfile>) => {
-    try {
       const response = await fetch('/api/user/me/profile/', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
-      
+
       if (response.ok) {
         const updated = await response.json();
         setProfile(updated);
@@ -82,9 +81,7 @@ const Profile: React.FC = () => {
         handleApiError(data, response.status);
         throw new Error(data.detail || '更新失败');
       }
-    } catch (error) {
-      throw error;
-    }
+
   };
 
   const handleSendEmailCode = async () => {
@@ -94,7 +91,7 @@ const Profile: React.FC = () => {
         message.error('请输入新邮箱');
         return;
       }
-      
+
       const response = await fetch('/api/user/send-change-email-code/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,12 +105,12 @@ const Profile: React.FC = () => {
         const data = await response.json();
         message.error(data.detail || '发送失败');
       }
-    } catch (error) {
+    } catch {
       message.error('网络错误');
     }
   };
 
-  const handleChangeEmail = async (values: any) => {
+  const handleChangeEmail = async (values: { email: string; code: string }) => {
     try {
       const response = await fetch('/api/user/change-email/', {
         method: 'POST',
@@ -130,13 +127,13 @@ const Profile: React.FC = () => {
         const data = await response.json();
         throw new Error(data.non_field_errors?.[0] || data.detail || '修改失败');
       }
-    } catch (error: any) {
-      message.error(error.message);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '网络错误');
       throw error;
     }
   };
 
-  const handleChangePassword = async (values: any) => {
+  const handleChangePassword = async (values: { old_password: string; new_password: string; new_password_confirm: string }) => {
     try {
       const response = await fetch('/api/user/change-password/', {
         method: 'POST',
@@ -152,8 +149,8 @@ const Profile: React.FC = () => {
         const data = await response.json();
         throw new Error(data.non_field_errors?.[0] || data.detail || '修改失败');
       }
-    } catch (error: any) {
-      message.error(error.message);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '网络错误');
       throw error;
     }
   };
@@ -192,7 +189,7 @@ const Profile: React.FC = () => {
   return (
     <MainLayout>
       <PageHeader title="个人中心" />
-      
+
       <div style={{ display: 'flex', gap: 24, flexDirection: 'column' }}>
         {/* 头像区域 */}
         <ContentCard>
@@ -206,19 +203,19 @@ const Profile: React.FC = () => {
             <div>
               <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>{profile?.name}</div>
               <div style={{ color: '#888', fontSize: 14, marginBottom: 8 }}>
-                {profile?.role === 'teacher' ? '教师' : '学生'} · {profile?.student_id}
+                {profile?.role === 'admin' ? '管理员' : profile?.role === 'teacher' ? '教师' : '学生'} · {profile?.student_id}
               </div>
               <Upload
                 showUploadList={false}
                 beforeUpload={(file) => {
-                  if (file.size > 1024 * 1024) {
-                    message.error('图片大小不能超过1MB')
+                  if (file.size > 5 * 1024 * 1024) {
+                    message.error('图片大小不能超过5MB')
                     return false
                   }
                   handleAvatarUpload(file)
                   return false
                 }}
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
               >
                 <Button icon={<UploadOutlined />} size="small">更换头像</Button>
               </Upload>
@@ -230,10 +227,10 @@ const Profile: React.FC = () => {
         <ContentCard title="基本资料">
           <Descriptions bordered column={{ xxl: 4, xl: 3, lg: 3, md: 3, sm: 2, xs: 1 }}>
             <Descriptions.Item label="姓名">{profile?.name}</Descriptions.Item>
-            <Descriptions.Item label={profile?.role === 'teacher' ? '工号' : '学号'}>{profile?.student_id}</Descriptions.Item>
+            <Descriptions.Item label={profile?.role === 'student' ? '学号' : '工号'}>{profile?.student_id}</Descriptions.Item>
             <Descriptions.Item label="角色">
               <Tag color={profile?.role === 'teacher' ? 'gold' : 'blue'}>
-                {profile?.role === 'teacher' ? '教师' : '学生'}
+                {profile?.role === 'admin' ? '管理员' : profile?.role === 'teacher' ? '教师' : '学生'}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="手机号">{profile?.phone || '-'}</Descriptions.Item>
@@ -287,11 +284,11 @@ const Profile: React.FC = () => {
                       </div>
                       <Button onClick={() => setPasswordModalVisible(true)}>修改密码</Button>
                     </div>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontWeight: 500, fontSize: 16 }}>绑定邮箱</div>
-                        <div style={{ color: '#888', fontSize: 14 }}>用于接收通知和找回密码</div>
+                        <div style={{ color: '#888', fontSize: 14 }}>用于接收注册和账号邮箱验证码</div>
                       </div>
                       <Button onClick={() => setEmailModalVisible(true)}>修改邮箱</Button>
                     </div>
@@ -323,7 +320,7 @@ const Profile: React.FC = () => {
           >
             <Input prefix={<MailOutlined />} />
           </AppForm.Item>
-          
+
           <div style={{ display: 'flex', gap: 8 }}>
             <AppForm.Item
               name="code"
@@ -333,7 +330,7 @@ const Profile: React.FC = () => {
             >
               <Input prefix={<SafetyCertificateOutlined />} />
             </AppForm.Item>
-            <Button 
+            <Button
               style={{ marginTop: 30 }}
               onClick={handleSendEmailCode}
               disabled={emailCountdown > 0}
@@ -368,7 +365,7 @@ const Profile: React.FC = () => {
           >
             <Input.Password prefix={<LockOutlined />} />
           </AppForm.Item>
-          
+
           <AppForm.Item
             name="new_password"
             label="新密码"

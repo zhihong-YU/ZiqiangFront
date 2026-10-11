@@ -6,7 +6,7 @@ interface FormModalProps<T> extends ModalProps {
   children?: React.ReactNode;
 }
 
-export const FormModal = <T extends object = any>({
+export const FormModal = <T extends object = Record<string, unknown>>({
   formProps,
   children,
   onOk, // We intercept onOk

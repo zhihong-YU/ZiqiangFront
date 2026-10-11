@@ -2,14 +2,14 @@ import { Form, FormProps, message } from 'antd';
 import { ReactNode } from 'react';
 
 export interface AppFormProps<T> extends Omit<FormProps<T>, 'onFinish'> {
-  onFinishAsync?: (values: T) => Promise<any>;
+  onFinishAsync?: (values: T) => Promise<unknown>;
   successMessage?: string;
   children?: ReactNode;
 }
 
-export const AppForm = <T extends object = any>({
+export const AppForm = <T extends object = Record<string, unknown>>({
   onFinishAsync,
-  successMessage = '操作成功',
+  successMessage = '',
   children,
   ...props
 }: AppFormProps<T>) => {

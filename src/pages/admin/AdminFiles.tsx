@@ -46,13 +46,13 @@ const AdminFiles: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined)
   const [searchText, setSearchText] = useState('')
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (requestPage = page) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (categoryFilter) params.set('category', categoryFilter)
       if (searchText) params.set('search', searchText)
-      params.set('page', String(page))
+      params.set('page', String(requestPage))
       params.set('page_size', '20')
       const res = await fetch(`/api/admin/files/?${params.toString()}`)
       if (!res.ok) {
@@ -77,7 +77,7 @@ const AdminFiles: React.FC = () => {
 
   const handleSearch = () => {
     setPage(1)
-    fetchFiles()
+    fetchFiles(1)
   }
 
   const handleDelete = async (id: string) => {
@@ -184,6 +184,7 @@ const AdminFiles: React.FC = () => {
           pagination={{
             current: page,
             pageSize: 20,
+            showSizeChanger: false,
             total,
             onChange: (p) => setPage(p),
             showTotal: (t: number) => `共 ${t} 条`,
