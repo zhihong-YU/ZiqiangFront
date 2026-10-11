@@ -12,7 +12,7 @@ React 19 + TypeScript + Vite + Ant Design，连接真实 Django API。后端：[
 | [更新记录](CHANGELOG.md) | 已完成变更及验证 |
 | [维护约定](AGENTS.md) | 每次修改同步文档与 GitHub |
 
-当前协作/发布代码分支 `yzh24`，本次推送不会自动合并到 `main`。后端功能规则、数据模型、运维、联调报告在后端仓库 docs/ 与 qa/。
+当前默认维护/发布分支 `main`，已包含 `yzh24` 的网站联调和维护文档版本；`yzh24` 保留原有协作历史。后端功能规则、数据模型、运维、联调报告在后端仓库 docs/ 与 qa/。
 
 ## 本地运行
 

@@ -43,7 +43,7 @@ build 包含 tsc --noEmit。npm ci 使用提交的 lockfile；修改依赖需要
 
 ## GitHub 和文档维护
 
-每个完成改动都应更新涉及的功能/API/部署文档及 CHANGELOG，验证后 commit + push 当前 yzh24；后端涉及变更另在后端仓库提交。检查远端差异并正常快进/按需解决冲突，不 force push。交付写出提交 SHA 和验证结果。推送当前协作分支不会自动合并 main。
+每个完成改动都应更新涉及的功能/API/部署文档及 CHANGELOG，验证后 commit + push 当前 main；后端涉及变更另在后端仓库提交。检查远端差异并正常快进/按需解决冲突，不 force push。交付写出提交 SHA 和验证结果。yzh24 已合入 main；后续其他协作分支的推送不会自动合入 main，需要明确完成合并并验证。
 
 禁止提交凭据、会话、真实个人数据、.env、node_modules 和 dist。功能记录应包含页面路由、角色、API、输入/响应、状态规则、代码位置、错误和未实现边界。
 

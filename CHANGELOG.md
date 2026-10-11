@@ -10,3 +10,9 @@
 - 管理员密码更新非空至少 6 字符，留空不变；安全页面移除尚未实现的密码找回说明。
 - 增加完整页面/API/组件/部署维护文档与 AGENTS.md；每次改动同步 GitHub 和文档。
 - 验证：TypeScript/Vite build 与 ESLint 通过；三角色网页联调及 PostgreSQL 90 项结果见后端 qa/。未实现功能和验证限制单列。
+
+### 默认分支归并
+
+- 经用户授权，将 yzh24 当前版本快进合并到 main，并推送建立 GitHub main 分支。
+- main 作为后续默认维护/发布分支，README、开发说明和维护约定同步更新；yzh24 分支保留。
+- 合并树的 TypeScript/Vite build 和 ESLint 验证通过。
