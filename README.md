@@ -1,6 +1,6 @@
 # 自强科协网站前端
 
-React 19 + TypeScript + Vite + Ant Design，连接真实 Django API。后端：[ZiqiangBackend](https://github.com/honghuwu/ZiqiangBackend)。正式网站：https://ziqiangkexie.cn/，管理员独立入口 `/admin/login`。
+React 19 + TypeScript + Vite + Ant Design，连接真实 Django API。后端：[ZiqiangBackend](https://github.com/zhihong-YU/ZiqiangBackend)。正式网站：https://ziqiangkexie.cn/，管理员独立入口 `/admin/login`。
 
 ## 接手维护
 

@@ -2,7 +2,7 @@
 
 更新：2026-10-11。
 
-完整且按实际源码核对的接口方法、字段、响应、分页及权限，维护在后端 [docs/api.md](https://github.com/honghuwu/ZiqiangBackend/blob/master/docs/api.md)。业务规则见后端 [docs/features.md](https://github.com/honghuwu/ZiqiangBackend/blob/master/docs/features.md)。本仓库对应页面与调用链见 [docs/features.md](docs/features.md)，公共请求和本地调试见 [docs/development.md](docs/development.md)。
+完整且按实际源码核对的接口方法、字段、响应、分页及权限，维护在后端 [docs/api.md](https://github.com/zhihong-YU/ZiqiangBackend/blob/master/docs/api.md)。业务规则见后端 [docs/features.md](https://github.com/zhihong-YU/ZiqiangBackend/blob/master/docs/features.md)。本仓库对应页面与调用链见 [docs/features.md](docs/features.md)，公共请求和本地调试见 [docs/development.md](docs/development.md)。
 
 ## 关键对接约定
 
@@ -18,6 +18,6 @@
 
 ## 验证与现有限制
 
-2026-10-11 独立学生/教师/管理员全流程报告：[后端 qa 报告](https://github.com/honghuwu/ZiqiangBackend/blob/master/qa/full-site-qa-20261011.md)。最终 PostgreSQL 90 项回归通过，前端 build/lint 通过；公网 174 条历史检查及复测留档。
+2026-10-11 独立学生/教师/管理员全流程报告：[后端 qa 报告](https://github.com/zhihong-YU/ZiqiangBackend/blob/master/qa/full-site-qa-20261011.md)。最终 PostgreSQL 90 项回归通过，前端 build/lint 通过；公网 174 条历史检查及复测留档。
 
 通知页面、忘记密码、撤回申请、知识库文章编辑/全文搜索未实现。公开 can_recruit 筛选当前不包含进行中项目，虽然直接报名允许；教师自选注册没有人工身份审批。测试注册使用预置验证码，不代表新增测试邮箱实收邮件。ICP 状态未独立核验，运维当前访问状态见后端 deployment 文档。
